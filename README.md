@@ -3,8 +3,14 @@
 A live demo of [Flecto](https://github.com/myselfsiddharth/Flecto) reviewing a
 Terraform plan on a pull request.
 
-**→ [See it on a real pull request](../../pulls)** — open the PR titled
-"Allow partner access to the uploads bucket" and read the Flecto comment.
+**→ [PR #1 — the dangerous one](https://github.com/myselfsiddharth/flecto-example-terraform/pull/1)**
+· ❌ 6 errors, check fails
+
+**→ [PR #2 — an ordinary change](https://github.com/myselfsiddharth/flecto-example-terraform/pull/2)**
+· ✅ no findings, check passes
+
+Both run the same gate. The second one matters as much as the first: a check
+that fires on everything gets uninstalled in a week.
 
 ---
 
@@ -51,7 +57,29 @@ letting a partner upload files. What it actually does:
 Three lines of diff, spread across three resources, in a plan that is a few
 hundred lines long. That is the review this tool exists for.
 
-Flecto fails the check and posts one comment naming all three.
+Flecto fails the check and posts one comment naming all three:
+
+```
+❌ Check failing — 30 changes in 1 file — 0 changed, 30 added, 0 removed.
+Policy: 6 errors.
+
+aws_security_group.web.ingress[0].cidr_blocks[0]
+  terraform-security-group-open-ingress
+  Security group ingress will accept traffic from the whole internet
+  (0.0.0.0/0). Restrict the source to a known CIDR, a prefix list, or
+  another security group.
+
+aws_s3_bucket_public_access_block.uploads.block_public_acls        (+3 more)
+  terraform-s3-public-access-block-disabled
+  S3 public access block is being turned off or removed.
+
+aws_iam_role_policy.app.policy
+  terraform-iam-wildcard
+  IAM policy grants a wildcard action or resource ("*").
+```
+
+Meanwhile [PR #2](https://github.com/myselfsiddharth/flecto-example-terraform/pull/2)
+adds two tags to a bucket and reports **✅ Check passing — Policy: no findings**.
 
 ## A note on what this demo does not show
 
