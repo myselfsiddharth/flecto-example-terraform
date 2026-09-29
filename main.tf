@@ -41,6 +41,11 @@ resource "aws_security_group" "web" {
 # Application uploads. Public access is blocked, which is the default we want.
 resource "aws_s3_bucket" "uploads" {
   bucket = "flecto-example-uploads"
+
+  tags = {
+    CostCenter = "platform"
+    ManagedBy  = "terraform"
+  }
 }
 
 resource "aws_s3_bucket_public_access_block" "uploads" {
