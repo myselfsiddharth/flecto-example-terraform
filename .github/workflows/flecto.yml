@@ -1,0 +1,39 @@
+# Review the Terraform plan on every pull request, and fail on the dangerous
+# changes. This is the whole setup -- the two steps at the bottom.
+name: Terraform plan review
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  # Needed for the sticky risk comment. Without it the report still prints to
+  # the job log and the gate still fails; only the comment is skipped.
+  pull-requests: write
+
+jobs:
+  plan-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        # No fetch-depth needed: a plan JSON carries its own before/after, so
+        # Flecto resolves no baseline in this mode.
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_wrapper: false
+
+      - run: terraform init -backend=false
+
+      - name: Render the plan as JSON
+        run: |
+          terraform plan -out=tf.plan
+          terraform show -json tf.plan > plan.json
+
+      - name: Flecto risk review
+        uses: myselfsiddharth/Flecto/.github/actions/flecto-pr-risk@v4.1.0
+        with:
+          terraform-plan: plan.json
+          # `error` is what the terraform pack reserves for changes that should
+          # block a merge. Sizing and cost advice sits at `warn`.
+          fail-on: error
