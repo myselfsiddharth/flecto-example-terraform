@@ -30,11 +30,11 @@ resource "aws_security_group" "web" {
   description = "Public web tier"
 
   ingress {
-    description = "HTTPS from the office VPN"
+    description = "HTTPS"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/8"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -46,10 +46,10 @@ resource "aws_s3_bucket" "uploads" {
 resource "aws_s3_bucket_public_access_block" "uploads" {
   bucket = aws_s3_bucket.uploads.id
 
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
 }
 
 # The application's own role. Scoped to the one bucket it needs.
@@ -61,8 +61,8 @@ resource "aws_iam_role_policy" "app" {
     Version = "2012-10-17"
     Statement = [{
       Effect   = "Allow"
-      Action   = ["s3:GetObject", "s3:PutObject"]
-      Resource = "arn:aws:s3:::flecto-example-uploads/*"
+      Action   = ["s3:*"]
+      Resource = "*"
     }]
   })
 }
